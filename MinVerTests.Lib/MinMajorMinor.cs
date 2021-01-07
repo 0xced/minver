@@ -1,9 +1,10 @@
+using System.Reflection;
 using MinVer.Lib;
+using MinVerTests.Infra;
 using MinVerTests.Lib.Infra;
 using Xbehave;
 using Xunit;
-using static MinVerTests.Lib.Infra.FileSystem;
-using static MinVerTests.Lib.Infra.Git;
+using static MinVerTests.Infra.Git;
 using Version = MinVer.Lib.Version;
 
 namespace MinVerTests.Lib
@@ -13,8 +14,8 @@ namespace MinVerTests.Lib
         [Scenario]
         public static void NoCommits(string path, Version actualVersion)
         {
-            $"Given an empty git repository in '{path = GetScenarioDirectory("minimum-major-minor-not-tagged")}'"
-                .x(() => EnsureEmptyRepository(path));
+            $"Given an empty git repository"
+                .x(() => EnsureEmptyRepository(path = MethodBase.GetCurrentMethod().GetTestDirectory()));
 
             "When the version is determined using minimum major minor '1.2'"
                 .x(() => actualVersion = Versioner.GetVersion(path, default, new MajorMinor(1, 2), default, default, default, default));
@@ -29,8 +30,8 @@ namespace MinVerTests.Lib
         [Example("2.0.0", 3, 0, "3.0.0-alpha.0", false)]
         public static void Tagged(string tag, int major, int minor, string expectedVersion, bool isRedundant, string path, TestLogger logger, Version actualVersion)
         {
-            $"Given a git repository with a commit in '{path = GetScenarioDirectory($"minimum-major-minor-tagged-{tag}-{major}-{minor}")}'"
-                .x(() => EnsureEmptyRepositoryAndCommit(path));
+            $"Given a git repository with a commit"
+                .x(() => EnsureEmptyRepositoryAndCommit(path = MethodBase.GetCurrentMethod().GetTestDirectory(major)));
 
             $"And the commit is tagged '{tag}'"
                 .x(() => Tag(path, tag));
@@ -51,8 +52,8 @@ namespace MinVerTests.Lib
         [Scenario]
         public static void NotTagged(string path, Version actualVersion)
         {
-            $"Given a git repository with a commit in '{path = GetScenarioDirectory("minimum-major-minor-not-tagged")}'"
-                .x(() => EnsureEmptyRepositoryAndCommit(path));
+            $"Given a git repository with a commit"
+                .x(() => EnsureEmptyRepositoryAndCommit(path = MethodBase.GetCurrentMethod().GetTestDirectory()));
 
             "When the version is determined using minimum major minor '1.0'"
                 .x(() => actualVersion = Versioner.GetVersion(path, default, new MajorMinor(1, 0), default, default, default, default));

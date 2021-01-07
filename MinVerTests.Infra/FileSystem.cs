@@ -1,14 +1,12 @@
 using System.IO;
 using System.Threading;
 
-namespace MinVerTests.Lib.Infra
+namespace MinVerTests.Infra
 {
     // The spin waits are required. System.IO and the file system race. ¯\_(ツ)_/¯
     public static class FileSystem
     {
         private static readonly int millisecondsTimeout = 50;
-
-        public static string GetScenarioDirectory(string scenarioName) => Path.Combine(Path.GetTempPath(), "minver-tests", scenarioName);
 
         public static void EnsureEmptyDirectory(string path)
         {
@@ -16,29 +14,11 @@ namespace MinVerTests.Lib.Infra
             EnsureDirectoryCreated(path);
         }
 
-        private static void EnsureDirectoryCreated(string path)
-        {
-            if (SpinWait.SpinUntil(() => !Directory.Exists(path), millisecondsTimeout))
-            {
-                CreateDirectory(path);
-            }
-        }
-
         private static void EnsureDirectoryDeleted(string path)
         {
             if (SpinWait.SpinUntil(() => Directory.Exists(path), millisecondsTimeout))
             {
                 DeleteDirectory(path);
-            }
-        }
-
-        private static void CreateDirectory(string path)
-        {
-            Directory.CreateDirectory(path);
-
-            if (!SpinWait.SpinUntil(() => Directory.Exists(path), millisecondsTimeout))
-            {
-                throw new IOException($"Failed to create directory '{path}'.");
             }
         }
 
@@ -67,6 +47,24 @@ namespace MinVerTests.Lib.Infra
             if (!SpinWait.SpinUntil(() => !Directory.Exists(path), millisecondsTimeout))
             {
                 throw new IOException($"Failed to delete directory '{path}'.");
+            }
+        }
+
+        private static void EnsureDirectoryCreated(string path)
+        {
+            if (SpinWait.SpinUntil(() => !Directory.Exists(path), millisecondsTimeout))
+            {
+                CreateDirectory(path);
+            }
+        }
+
+        private static void CreateDirectory(string path)
+        {
+            _ = Directory.CreateDirectory(path);
+
+            if (!SpinWait.SpinUntil(() => Directory.Exists(path), millisecondsTimeout))
+            {
+                throw new IOException($"Failed to create directory '{path}'.");
             }
         }
     }

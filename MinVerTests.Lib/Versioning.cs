@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
+using CliWrap;
 using MinVer.Lib;
 using MinVerTests.Lib.Infra;
+using MinVerTests.Infra;
 using Xbehave;
 using Xunit;
-using static MinVerTests.Lib.Infra.FileSystem;
-using static MinVerTests.Lib.Infra.Git;
-using static SimpleExec.Command;
+using static MinVerTests.Infra.FileSystem;
+using static MinVerTests.Infra.Git;
 using Version = MinVer.Lib.Version;
 
 namespace MinVerTests.Lib
@@ -70,26 +72,26 @@ git tag 1.1.0 -a -m '.'
         [Example("general")]
         public static void RepoWithHistory(string name, string path)
         {
-            $"Given a git repository in '{path = GetScenarioDirectory("versioning-repo-with-history-" + name)}' with a history of branches and/or tags"
+            $"Given a git repository with a history of branches and/or tags"
                 .x(async () =>
                 {
-                    EnsureEmptyRepositoryAndCommit(path);
+                    await EnsureEmptyRepositoryAndCommit(path = MethodBase.GetCurrentMethod().GetTestDirectory(name));
 
                     foreach (var command in historicalCommands[name].Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
                     {
                         var nameAndArgs = command.Split(" ", 2);
-                        await RunAsync(nameAndArgs[0], nameAndArgs[1], path);
+                        await Cli.Wrap(nameAndArgs[0]).WithArguments(nameAndArgs[1]).WithWorkingDirectory(path).ExecuteAsync();
                         await Task.Delay(200);
                     }
                 });
 
             "When the version is determined for every commit"
-                .x(() =>
+                .x(async () =>
                 {
                     var versionCounts = new Dictionary<string, int>();
-                    foreach (var sha in GetCommitShas(path))
+                    foreach (var sha in await GetCommitShas(path))
                     {
-                        Checkout(path, sha);
+                        await Checkout(path, sha);
 
                         var version = Versioner.GetVersion(path, default, default, default, default, default, default);
                         var versionString = version.ToString();
@@ -103,10 +105,10 @@ git tag 1.1.0 -a -m '.'
                             ? $"v({versionCount})/{versionString}"
                             : tagName;
 
-                        Tag(path, tagName, sha);
+                        await Tag(path, tagName, sha);
                     }
 
-                    Checkout(path, "master");
+                    await Checkout(path, "master");
                 });
 
             "Then the versions are as expected"
@@ -116,8 +118,8 @@ git tag 1.1.0 -a -m '.'
         [Scenario]
         public static void EmptyRepo(string path, Version version)
         {
-            $"Given an empty git repository in '{path = GetScenarioDirectory("versioning-empty-repo")}'"
-                .x(() => EnsureEmptyRepository(path));
+            $"Given an empty git repository"
+                .x(() => EnsureEmptyRepository(path = MethodBase.GetCurrentMethod().GetTestDirectory()));
 
             "When the version is determined"
                 .x(() => version = Versioner.GetVersion(path, default, default, default, default, default, default));
@@ -129,8 +131,8 @@ git tag 1.1.0 -a -m '.'
         [Scenario]
         public static void NoRepo(string path, Version version)
         {
-            $"Given an empty directory '{path = GetScenarioDirectory("versioning-no-repo")}'"
-                .x(() => EnsureEmptyDirectory(path));
+            $"Given an empty directory"
+                .x(() => EnsureEmptyDirectory(path = MethodBase.GetCurrentMethod().GetTestDirectory()));
 
             "When the version is determined"
                 .x(() => version = Versioner.GetVersion(path, default, default, default, default, default, default));

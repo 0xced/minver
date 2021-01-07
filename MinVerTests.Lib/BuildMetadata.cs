@@ -1,9 +1,9 @@
+using System.Reflection;
 using MinVer.Lib;
-using MinVerTests.Lib.Infra;
+using MinVerTests.Infra;
 using Xbehave;
 using Xunit;
-using static MinVerTests.Lib.Infra.FileSystem;
-using static MinVerTests.Lib.Infra.Git;
+using static MinVerTests.Infra.Git;
 using Version = MinVer.Lib.Version;
 
 namespace MinVerTests.Lib
@@ -15,8 +15,8 @@ namespace MinVerTests.Lib
         [Example("a", "0.0.0-alpha.0+a")]
         public static void NoCommits(string buildMetadata, string expectedVersion, string path, Version actualVersion)
         {
-            $"Given an empty git repository in '{path = GetScenarioDirectory($"build-metadata-no-tag-{buildMetadata}")}'"
-                .x(() => EnsureEmptyRepository(path));
+            $"Given an empty git repository"
+                .x(() => EnsureEmptyRepository(path = MethodBase.GetCurrentMethod().GetTestDirectory(buildMetadata)));
 
             $"When the version is determined using build metadata '{buildMetadata}'"
                 .x(() => actualVersion = Versioner.GetVersion(path, default, default, buildMetadata, default, default, default));
@@ -30,8 +30,8 @@ namespace MinVerTests.Lib
         [Example("a", "0.0.0-alpha.0+a")]
         public static void NoTag(string buildMetadata, string expectedVersion, string path, Version actualVersion)
         {
-            $"Given a git repository with a commit in '{path = GetScenarioDirectory($"build-metadata-no-tag-{buildMetadata}")}'"
-                .x(() => EnsureEmptyRepositoryAndCommit(path));
+            $"Given a git repository with a commit"
+                .x(() => EnsureEmptyRepositoryAndCommit(path = MethodBase.GetCurrentMethod().GetTestDirectory(buildMetadata)));
 
             $"When the version is determined using build metadata '{buildMetadata}'"
                 .x(() => actualVersion = Versioner.GetVersion(path, default, default, buildMetadata, default, default, default));
@@ -49,8 +49,8 @@ namespace MinVerTests.Lib
         [Example("1.2.3-pre+a", "b", "1.2.3-pre+a.b")]
         public static void CurrentTag(string tag, string buildMetadata, string expectedVersion, string path, Version actualVersion)
         {
-            $"Given a git repository with a commit in '{path = GetScenarioDirectory($"build-metadata-current-tag-{tag}-{buildMetadata}")}'"
-                .x(() => EnsureEmptyRepositoryAndCommit(path));
+            $"Given a git repository with a commit"
+                .x(() => EnsureEmptyRepositoryAndCommit(path = MethodBase.GetCurrentMethod().GetTestDirectory((tag, buildMetadata))));
 
             $"And the commit is tagged '{tag}'"
                 .x(() => Tag(path, tag));
@@ -71,8 +71,8 @@ namespace MinVerTests.Lib
         [Example("1.2.3-pre+a", "b", "1.2.3-pre.1+b")]
         public static void PreviousTag(string tag, string buildMetadata, string expectedVersion, string path, Version actualVersion)
         {
-            $"Given a git repository with a commit in '{path = GetScenarioDirectory($"build-metadata-previous-tag-{tag}-{buildMetadata}")}'"
-                .x(() => EnsureEmptyRepositoryAndCommit(path));
+            $"Given a git repository with a commit"
+                .x(()=> EnsureEmptyRepositoryAndCommit(path = MethodBase.GetCurrentMethod().GetTestDirectory((tag, buildMetadata))));
 
             $"And the commit is tagged '{tag}'"
                 .x(() => Tag(path, tag));
