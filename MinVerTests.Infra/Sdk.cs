@@ -32,9 +32,9 @@ $@"{{
             }
 
 #if DEBUG
-            var source = Path.Combine(typeof(Sdk).Assembly.Location, "/../../../../../MinVer/bin/Debug/");
+            var source = Path.GetFullPath(Path.Combine(typeof(Sdk).Assembly.Location, "/../../../../../MinVer/bin/Debug/"));
 #else
-            var source = Path.Combine(typeof(Sdk).Assembly.Location, "/../../../../../MinVer/bin/Release/");
+            var source = Path.GetFullPath(Path.Combine(typeof(Sdk).Assembly.Location, "/../../../../../MinVer/bin/Release/"));
 #endif
 
             var minVerPackageVersion = Path.GetFileNameWithoutExtension(Directory.EnumerateFiles(source, "*.nupkg").First()).Split("MinVer.", 2)[1];

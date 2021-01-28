@@ -13,12 +13,12 @@ namespace MinVerTests.Infra
             var environmentVariables = envVars.ToDictionary(envVar => envVar.Item1, envVar => envVar.Item2, StringComparer.OrdinalIgnoreCase);
             _ = environmentVariables.TryAdd("MinVerVerbosity".ToAltCase(), "trace");
 
-            var path = Path.Combine(
+            var path = Path.GetFullPath(Path.Combine(
                 typeof(MinVerCli).Assembly.Location,
 #if DEBUG
-                "/../../../../../minver-cli/bin/Debug/netcoreapp2.1/minver-cli.dll");
+                "/../../../../../minver-cli/bin/Debug/netcoreapp2.1/minver-cli.dll"));
 #else
-                "/../../../../../minver-cli/bin/Release/netcoreapp2.1/minver-cli.dll");
+                "/../../../../../minver-cli/bin/Release/netcoreapp2.1/minver-cli.dll"));
 #endif
 
             var result = await CliWrap.Cli.Wrap("dotnet")

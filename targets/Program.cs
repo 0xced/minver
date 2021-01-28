@@ -60,9 +60,9 @@ Target(
         await Git.Tag(path, "v.1.2.3-alpha.4");
         await Git.Commit(path);
 
-        var minVerCliPath = Path.Combine(
+        var minVerCliPath = Path.GetFullPath(Path.Combine(
             MethodBase.GetCurrentMethod().DeclaringType.Assembly.Location,
-            "../../../../../minver-cli/bin/Release/netcoreapp2.1/minver-cli.dll");
+            "../../../../../minver-cli/bin/Release/netcoreapp2.1/minver-cli.dll"));
 
         await RunAsync(
             "dotnet",
