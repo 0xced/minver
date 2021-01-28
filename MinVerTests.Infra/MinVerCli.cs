@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CliWrap.Buffered;
@@ -12,12 +13,16 @@ namespace MinVerTests.Infra
             var environmentVariables = envVars.ToDictionary(envVar => envVar.Item1, envVar => envVar.Item2, StringComparer.OrdinalIgnoreCase);
             _ = environmentVariables.TryAdd("MinVerVerbosity".ToAltCase(), "trace");
 
-            var result = await CliWrap.Cli.Wrap("dotnet")
+            var path = Path.Combine(
+                typeof(MinVerCli).Assembly.Location,
 #if DEBUG
-                .WithArguments($"exec {typeof(MinVerCli).Assembly.Location}/../../../../../minver-cli/bin/Debug/netcoreapp2.1/minver-cli.dll {workingDirectory}")
+                "/../../../../../minver-cli/bin/Debug/netcoreapp2.1/minver-cli.dll");
 #else
-                .WithArguments($"exec {typeof(MinVerCli).Assembly.Location}/../../../../../minver-cli/bin/Release/netcoreapp2.1/minver-cli.dll {workingDirectory}")
+                "/../../../../../minver-cli/bin/Release/netcoreapp2.1/minver-cli.dll");
 #endif
+
+            var result = await CliWrap.Cli.Wrap("dotnet")
+                .WithArguments($"exec {path} {workingDirectory}")
                 .WithEnvironmentVariables(environmentVariables)
                 .ExecuteBufferedAsync();
 
